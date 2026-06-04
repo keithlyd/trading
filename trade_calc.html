@@ -187,6 +187,57 @@
     gap: 3px;
   }
   .level-card.full .val { font-size: 22px; }
+  /* Hero treatment for the 50% retrace level — the most-watched in-trade level */
+  .retrace-hero {
+    background: linear-gradient(135deg, #4a3300 0%, #b07d00 100%);
+    border: 2px solid #ffb800;
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 0 1px rgba(255, 184, 0, 0.2), 0 4px 12px rgba(176, 125, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  .retrace-hero::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, transparent, rgba(255,184,0,0.15), transparent);
+    pointer-events: none;
+  }
+  .retrace-hero .hero-lbl {
+    font-size: 11px;
+    color: #ffd57a;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 800;
+    margin-bottom: 4px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  }
+  .retrace-hero .hero-val {
+    font-size: 38px;
+    font-weight: 900;
+    font-family: "SF Mono", Menlo, monospace;
+    color: #fff;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .retrace-hero .hero-sub {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.75);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .retrace-hero.empty {
+    background: #2a2724;
+    border: 2px dashed #3d3a37;
+    box-shadow: none;
+  }
+  .retrace-hero.empty::before { display: none; }
+  .retrace-hero.empty .hero-lbl { color: #888280; }
+  .retrace-hero.empty .hero-val { color: #555; text-shadow: none; }
   .position-card {
     background: linear-gradient(135deg, #1a3a5a 0%, #0066b3 100%);
     border: none;
@@ -469,6 +520,20 @@
     <button id="sideLong" class="active long" onclick="setSide('LONG')">LONG</button>
     <button id="sideShort" onclick="setSide('SHORT')">SHORT</button>
   </div>
+</div>
+
+<div class="risk-row">
+  <label>Risk $</label>
+  <input type="number" id="risk" inputmode="decimal" step="50" value="200">
+</div>
+
+<div class="position-card">
+  <div class="lbl">Position Size</div>
+  <div class="val" id="positionShares">—</div>
+  <div class="sub" id="positionDetail">enter values above</div>
+</div>
+
+<div class="input-group">
   <div class="input-cell">
     <label>Entry</label>
     <input type="number" id="entry" inputmode="decimal" step="0.01" placeholder="0.00">
@@ -487,24 +552,14 @@
   </div>
 </div>
 
-<div class="risk-row">
-  <label>Risk $</label>
-  <input type="number" id="risk" inputmode="decimal" step="50" value="200">
-</div>
-
-<div class="position-card">
-  <div class="lbl">Position Size</div>
-  <div class="val" id="positionShares">—</div>
-  <div class="sub" id="positionDetail">enter values above</div>
-</div>
-
 <div class="section">
   <div class="section-title">★ Critical Levels ★</div>
+  <div class="retrace-hero empty" id="card50">
+    <div class="hero-lbl">⚠️ 50% Retrace Level</div>
+    <div class="hero-val" id="lvl50">—</div>
+    <div class="hero-sub">Most urgent in-trade decision — exit on bar 1-4 low below this</div>
+  </div>
   <div class="levels-grid">
-    <div class="level-card warn full" id="card50">
-      <div class="lbl">50% Retrace Level</div>
-      <div class="val" id="lvl50">—</div>
-    </div>
     <div class="level-card danger full" id="cardStop">
       <div class="lbl">Stop (-1R)</div>
       <div class="val red" id="lvlStop">—</div>
@@ -870,12 +925,15 @@ function recalc() {
   }
 
   // 50% retrace
+  const heroEl = document.getElementById('card50');
   if (trigH && trigL && trigH > trigL) {
     const range = trigH - trigL;
     const lvl50 = isLong ? trigH - range / 2 : trigL + range / 2;
     document.getElementById('lvl50').textContent = fmt(lvl50);
+    heroEl.classList.remove('empty');
   } else {
     document.getElementById('lvl50').textContent = '—';
+    heroEl.classList.add('empty');
   }
 
   saveState();
