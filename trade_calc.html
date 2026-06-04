@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trade Calc">
+<meta name="theme-color" content="#1c1917">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231c1917'/><text x='50' y='66' font-size='52' text-anchor='middle' fill='%230a8a4a' font-family='system-ui' font-weight='bold'>1R</text></svg>">
+<title>Trade Calc</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #1c1917; color: #f5f5f4;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    font-size: 16px;
+    min-height: 100vh;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: contain;
+  }
+  body {
+    padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom) 14px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .header {
+    padding: 12px 0 8px 0;
+    text-align: center;
+    border-bottom: 1px solid #2a2724;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #f5f5f4;
+    letter-spacing: 0.02em;
+  }
+  .header .sub {
+    margin-top: 3px;
+    font-size: 11px;
+    color: #888280;
+  }
+  .input-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .input-cell {
+    background: #2a2724;
+    border-radius: 10px;
+    padding: 8px 10px;
+    border: 1px solid #3d3a37;
+  }
+  .input-cell label {
+    display: block;
+    font-size: 10px;
+    color: #a8a29e;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+  .input-cell input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: #f5f5f4;
+    font-size: 22px;
+    font-weight: 700;
+    font-family: "SF Mono", Menlo, monospace;
+    outline: none;
+    padding: 0;
+  }
+  .input-cell input::-webkit-outer-spin-button,
+  .input-cell input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .input-cell input[type=number] { -moz-appearance: textfield; }
+  .input-cell.side-toggle {
+    grid-column: span 2;
+    display: flex;
+    padding: 0;
+    overflow: hidden;
+    background: #2a2724;
+  }
+  .input-cell.side-toggle button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #a8a29e;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+  }
+  .input-cell.side-toggle button.active.long {
+    background: #0a8a4a;
+    color: #fff;
+  }
+  .input-cell.side-toggle button.active.short {
+    background: #d0172f;
+    color: #fff;
+  }
+  .risk-row {
+    display: flex;
+    align-items: center;
+    background: #2a2724;
+    border-radius: 10px;
+    padding: 8px 10px;
+    border: 1px solid #3d3a37;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+  .risk-row label {
+    font-size: 11px;
+    color: #a8a29e;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .risk-row input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: #f5f5f4;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: "SF Mono", Menlo, monospace;
+    outline: none;
+    text-align: right;
+    padding: 0;
+  }
+  .section {
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 10px;
+    color: #888280;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    margin-bottom: 6px;
+    padding-left: 4px;
+  }
+  .levels-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .level-card {
+    background: #2a2724;
+    border-radius: 8px;
+    padding: 9px 10px;
+    border-left: 3px solid #3d3a37;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .level-card.target { border-left-color: #0a8a4a; }
+  .level-card.danger { border-left-color: #d0172f; }
+  .level-card.warn   { border-left-color: #b07d00; }
+  .level-card.info   { border-left-color: #0066b3; }
+  .level-card .lbl {
+    font-size: 10px;
+    color: #a8a29e;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  .level-card .val {
+    font-size: 17px;
+    font-weight: 700;
+    font-family: "SF Mono", Menlo, monospace;
+    color: #f5f5f4;
+  }
+  .level-card .val.green { color: #0a8a4a; }
+  .level-card .val.red   { color: #d0172f; }
+  .level-card.full {
+    grid-column: span 2;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  .level-card.full .val { font-size: 22px; }
+  .position-card {
+    background: linear-gradient(135deg, #1a3a5a 0%, #0066b3 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .position-card .lbl {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .position-card .val {
+    font-size: 30px;
+    font-weight: 800;
+    color: #fff;
+    font-family: "SF Mono", Menlo, monospace;
+    letter-spacing: -0.02em;
+  }
+  .position-card .sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 3px;
+    font-family: "SF Mono", Menlo, monospace;
+  }
+  .reads {
+    background: #2a2724;
+    border-radius: 10px;
+    padding: 11px 14px;
+    margin-bottom: 14px;
+    border-left: 3px solid #6b3eb8;
+  }
+  .reads .section-title { margin-bottom: 8px; padding-left: 0; color: #b8a3e6; }
+  .read-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #3d3a37;
+    font-size: 13px;
+  }
+  .read-row:last-child { border-bottom: none; }
+  .read-row .read-q { color: #d4d4d2; font-weight: 500; }
+  .toggle-group { display: flex; gap: 4px; }
+  .toggle-group button {
+    background: #1c1917;
+    border: 1px solid #3d3a37;
+    color: #a8a29e;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    min-width: 38px;
+  }
+  .toggle-group button.active.yes { background: #0a8a4a; color: #fff; border-color: #0a8a4a; }
+  .toggle-group button.active.no  { background: #d0172f; color: #fff; border-color: #d0172f; }
+  .conviction-summary {
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    background: #1c1917;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #d4d4d2;
+  }
+  .conviction-summary.high { background: #0a8a4a; color: #fff; }
+  .conviction-summary.low  { background: #b07d00; color: #fff; }
+  .tripwires {
+    background: #2a1c1c;
+    border: 1px solid #6b1c2a;
+    border-radius: 10px;
+    padding: 11px 14px;
+    margin-bottom: 14px;
+  }
+  .tripwires .section-title { color: #ff8585; margin-bottom: 6px; padding-left: 0; }
+  .tripwires .tw-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 0;
+    font-family: "SF Mono", Menlo, monospace;
+  }
+  .tripwires .tw-row .lbl { color: #d4d4d2; }
+  .tripwires .tw-row .val { font-weight: 700; color: #ff8585; }
+  .reset-btn {
+    width: 100%;
+    background: #2a2724;
+    border: 1px solid #3d3a37;
+    color: #a8a29e;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 16px;
+    font-family: inherit;
+  }
+  .reset-btn:active { background: #3d3a37; }
+  .footer-note {
+    text-align: center;
+    font-size: 10px;
+    color: #666;
+    padding: 10px 0 20px 0;
+  }
+  .level-card.empty .val { color: #555; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Trade Calc</h1>
+  <div class="sub">Validated rules · 1R / 2R / 3R · runner ratchet</div>
+</div>
+
+<div class="input-group">
+  <div class="input-cell side-toggle">
+    <button id="sideLong" class="active long" onclick="setSide('LONG')">LONG</button>
+    <button id="sideShort" onclick="setSide('SHORT')">SHORT</button>
+  </div>
+  <div class="input-cell">
+    <label>Entry</label>
+    <input type="number" id="entry" inputmode="decimal" step="0.01" placeholder="0.00">
+  </div>
+  <div class="input-cell">
+    <label>Stop</label>
+    <input type="number" id="stop" inputmode="decimal" step="0.01" placeholder="0.00">
+  </div>
+  <div class="input-cell">
+    <label>Trigger High</label>
+    <input type="number" id="trigHigh" inputmode="decimal" step="0.01" placeholder="0.00">
+  </div>
+  <div class="input-cell">
+    <label>Trigger Low</label>
+    <input type="number" id="trigLow" inputmode="decimal" step="0.01" placeholder="0.00">
+  </div>
+</div>
+
+<div class="risk-row">
+  <label>Risk $</label>
+  <input type="number" id="risk" inputmode="decimal" step="50" value="200">
+</div>
+
+<div class="position-card">
+  <div class="lbl">Position Size</div>
+  <div class="val" id="positionShares">—</div>
+  <div class="sub" id="positionDetail">enter values above</div>
+</div>
+
+<div class="section">
+  <div class="section-title">★ Critical Levels ★</div>
+  <div class="levels-grid">
+    <div class="level-card warn full" id="card50">
+      <div class="lbl">50% Retrace Level</div>
+      <div class="val" id="lvl50">—</div>
+    </div>
+    <div class="level-card danger full" id="cardStop">
+      <div class="lbl">Stop (-1R)</div>
+      <div class="val red" id="lvlStop">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Targets</div>
+  <div class="levels-grid">
+    <div class="level-card target">
+      <div class="lbl">1R</div>
+      <div class="val green" id="lvl1R">—</div>
+    </div>
+    <div class="level-card target">
+      <div class="lbl">2R</div>
+      <div class="val green" id="lvl2R">—</div>
+    </div>
+    <div class="level-card target">
+      <div class="lbl">3R</div>
+      <div class="val green" id="lvl3R">—</div>
+    </div>
+    <div class="level-card target">
+      <div class="lbl">4R</div>
+      <div class="val green" id="lvl4R">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Runner Stop Ratchet</div>
+  <div class="levels-grid">
+    <div class="level-card info">
+      <div class="lbl">1R touch → Stop:</div>
+      <div class="val" id="lvlRat1">—</div>
+    </div>
+    <div class="level-card info">
+      <div class="lbl">3R touch → Stop:</div>
+      <div class="val" id="lvlRat3">—</div>
+    </div>
+    <div class="level-card info">
+      <div class="lbl">5R touch → Stop:</div>
+      <div class="val" id="lvlRat5">—</div>
+    </div>
+    <div class="level-card info">
+      <div class="lbl">8R touch → Stop:</div>
+      <div class="val" id="lvlRat8">—</div>
+    </div>
+    <div class="level-card info full">
+      <div class="lbl">Runner Cap (10R) — hard exit</div>
+      <div class="val" id="lvl10R">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="reads">
+  <div class="section-title">Conviction Reads</div>
+  <div class="read-row">
+    <div class="read-q">Bar before trigger?</div>
+    <div class="toggle-group" id="readPrev">
+      <button data-val="red" onclick="setRead('readPrev','red')">RED</button>
+      <button data-val="doji" onclick="setRead('readPrev','doji')">DOJI</button>
+      <button data-val="green" onclick="setRead('readPrev','green')">GREEN</button>
+    </div>
+  </div>
+  <div class="read-row">
+    <div class="read-q">Trigger closed above entry?</div>
+    <div class="toggle-group" id="readAbove">
+      <button data-val="yes" onclick="setRead('readAbove','yes')">YES</button>
+      <button data-val="no"  onclick="setRead('readAbove','no')">NO</button>
+    </div>
+  </div>
+  <div class="read-row">
+    <div class="read-q">Full body (&gt;60%)?</div>
+    <div class="toggle-group" id="readBody">
+      <button data-val="yes" onclick="setRead('readBody','yes')">YES</button>
+      <button data-val="no"  onclick="setRead('readBody','no')">NO</button>
+    </div>
+  </div>
+  <div class="read-row">
+    <div class="read-q">Biggest body of last 5?</div>
+    <div class="toggle-group" id="readBig">
+      <button data-val="yes" onclick="setRead('readBig','yes')">YES</button>
+      <button data-val="no"  onclick="setRead('readBig','no')">NO</button>
+    </div>
+  </div>
+  <div id="convictionSummary" class="conviction-summary">Toggle reads above to see conviction</div>
+</div>
+
+<div class="tripwires">
+  <div class="section-title">🛑 Today's Tripwires</div>
+  <div class="tw-row"><span class="lbl">Drawdown — slow down:</span><span class="val" id="twSlow">—</span></div>
+  <div class="tw-row"><span class="lbl">Drawdown — STOP:</span><span class="val" id="twStop">—</span></div>
+  <div class="tw-row"><span class="lbl">Full stops to stop:</span><span class="val">3</span></div>
+</div>
+
+<button class="reset-btn" onclick="resetAll()">Reset all inputs</button>
+
+<div class="footer-note">
+  Saves automatically · works offline once loaded
+</div>
+
+<script>
+let side = 'LONG';
+const reads = { readPrev: null, readAbove: null, readBody: null, readBig: null };
+
+function fmt(v) {
+  if (v == null || !isFinite(v)) return '—';
+  return '$' + v.toFixed(2);
+}
+
+function setSide(s) {
+  side = s;
+  document.getElementById('sideLong').classList.toggle('active', s === 'LONG');
+  document.getElementById('sideShort').classList.toggle('active', s === 'SHORT');
+  saveState();
+  recalc();
+}
+
+function setRead(key, val) {
+  // Toggle off if same value clicked again
+  reads[key] = reads[key] === val ? null : val;
+  // Update button states
+  const group = document.getElementById(key);
+  for (const btn of group.querySelectorAll('button')) {
+    const isActive = btn.dataset.val === reads[key];
+    btn.classList.toggle('active', isActive);
+    btn.classList.toggle('yes', isActive && (btn.dataset.val === 'yes' || btn.dataset.val === 'red' || btn.dataset.val === 'doji'));
+    btn.classList.toggle('no',  isActive && (btn.dataset.val === 'no'  || btn.dataset.val === 'green'));
+  }
+  updateConviction();
+  saveState();
+}
+
+function updateConviction() {
+  const el = document.getElementById('convictionSummary');
+  el.classList.remove('high', 'low');
+  // High-conviction: prev bar red/doji + closed above + full body + biggest of 5
+  const score = [
+    reads.readPrev === 'red' || reads.readPrev === 'doji' ? 1 : 0,
+    reads.readAbove === 'yes' ? 1 : 0,
+    reads.readBody === 'yes' ? 1 : 0,
+    reads.readBig === 'yes' ? 1 : 0,
+  ].reduce((a,b)=>a+b, 0);
+  const filled = Object.values(reads).filter(v => v != null).length;
+  if (filled === 0) {
+    el.textContent = 'Toggle reads above to see conviction';
+    return;
+  }
+  if (score >= 3) {
+    el.classList.add('high');
+    el.textContent = `★ HIGH CONVICTION (${score}/4) — hold runner with confidence`;
+  } else if (score >= 2) {
+    el.textContent = `⚡ Moderate conviction (${score}/4) — manage normally`;
+  } else {
+    el.classList.add('low');
+    el.textContent = `⚠ LOW conviction (${score}/4) — be quick to scale out`;
+  }
+}
+
+function recalc() {
+  const entry = parseFloat(document.getElementById('entry').value);
+  const stop  = parseFloat(document.getElementById('stop').value);
+  const trigH = parseFloat(document.getElementById('trigHigh').value);
+  const trigL = parseFloat(document.getElementById('trigLow').value);
+  const risk  = parseFloat(document.getElementById('risk').value) || 200;
+
+  const isLong = side === 'LONG';
+
+  // Position
+  if (entry && stop && Math.abs(entry - stop) > 0) {
+    const r = Math.abs(entry - stop);
+    const shares = Math.floor(risk / r);
+    document.getElementById('positionShares').textContent = shares.toLocaleString() + ' sh';
+    document.getElementById('positionDetail').textContent =
+      `R = $${r.toFixed(2)} · risk $${risk} · ≈ $${(shares * entry).toLocaleString(undefined, {maximumFractionDigits: 0})} notional`;
+
+    // Levels
+    const sign = isLong ? 1 : -1;
+    document.getElementById('lvlStop').textContent = fmt(stop);
+    document.getElementById('lvl1R').textContent  = fmt(entry + sign * 1 * r);
+    document.getElementById('lvl2R').textContent  = fmt(entry + sign * 2 * r);
+    document.getElementById('lvl3R').textContent  = fmt(entry + sign * 3 * r);
+    document.getElementById('lvl4R').textContent  = fmt(entry + sign * 4 * r);
+    document.getElementById('lvl10R').textContent = fmt(entry + sign * 10 * r);
+    // Ratchet levels — these are where stop MOVES TO at each touch threshold
+    document.getElementById('lvlRat1').textContent = fmt(entry);                  // 1R touch → BE
+    document.getElementById('lvlRat3').textContent = fmt(entry + sign * 2 * r);   // 3R touch → 2R
+    document.getElementById('lvlRat5').textContent = fmt(entry + sign * 3 * r);   // 5R touch → 3R
+    document.getElementById('lvlRat8').textContent = fmt(entry + sign * 5 * r);   // 8R touch → 5R
+
+    // Tripwires (scale to risk size — assumes the validated $200-risk numbers scale linearly)
+    const scale = risk / 200;
+    document.getElementById('twSlow').textContent = '-$' + (660 * scale).toFixed(0);
+    document.getElementById('twStop').textContent = '-$' + (900 * scale).toFixed(0);
+  } else {
+    document.getElementById('positionShares').textContent = '—';
+    document.getElementById('positionDetail').textContent = 'enter values above';
+    for (const id of ['lvlStop','lvl1R','lvl2R','lvl3R','lvl4R','lvl10R','lvlRat1','lvlRat3','lvlRat5','lvlRat8']) {
+      document.getElementById(id).textContent = '—';
+    }
+    document.getElementById('twSlow').textContent = '—';
+    document.getElementById('twStop').textContent = '—';
+  }
+
+  // 50% retrace level — requires trigger high AND low
+  if (trigH && trigL && trigH > trigL) {
+    const range = trigH - trigL;
+    // For longs: 50% level = trigger high - half range
+    // For shorts: 50% level = trigger low + half range
+    const lvl50 = isLong ? trigH - range / 2 : trigL + range / 2;
+    document.getElementById('lvl50').textContent = fmt(lvl50);
+  } else {
+    document.getElementById('lvl50').textContent = '—';
+  }
+
+  saveState();
+}
+
+function resetAll() {
+  for (const id of ['entry','stop','trigHigh','trigLow']) document.getElementById(id).value = '';
+  for (const k of Object.keys(reads)) {
+    reads[k] = null;
+    for (const btn of document.getElementById(k).querySelectorAll('button')) btn.classList.remove('active','yes','no');
+  }
+  updateConviction();
+  recalc();
+}
+
+function saveState() {
+  const state = {
+    side, reads,
+    entry: document.getElementById('entry').value,
+    stop:  document.getElementById('stop').value,
+    trigHigh: document.getElementById('trigHigh').value,
+    trigLow:  document.getElementById('trigLow').value,
+    risk: document.getElementById('risk').value,
+  };
+  try { localStorage.setItem('tradecalc_state', JSON.stringify(state)); } catch (e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('tradecalc_state');
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    if (state.side) setSide(state.side);
+    if (state.entry)    document.getElementById('entry').value = state.entry;
+    if (state.stop)     document.getElementById('stop').value = state.stop;
+    if (state.trigHigh) document.getElementById('trigHigh').value = state.trigHigh;
+    if (state.trigLow)  document.getElementById('trigLow').value = state.trigLow;
+    if (state.risk)     document.getElementById('risk').value = state.risk;
+    if (state.reads) {
+      for (const k of Object.keys(state.reads)) {
+        if (state.reads[k]) setRead(k, state.reads[k]);
+      }
+    }
+  } catch (e) {}
+}
+
+// Wire input changes
+for (const id of ['entry','stop','trigHigh','trigLow','risk']) {
+  document.getElementById(id).addEventListener('input', recalc);
+}
+
+loadState();
+recalc();
+
+// Service worker for offline use
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'tradecalc-v1';
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.add('/')));
+      self.skipWaiting();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const url = URL.createObjectURL(blob);
+  // Note: serviceWorker registration requires HTTPS in production; will fail silently on local file://
+  navigator.serviceWorker.register(url).catch(() => {});
+}
+</script>
+
+</body>
+</html>
