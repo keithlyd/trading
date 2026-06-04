@@ -492,25 +492,6 @@
   <input type="number" id="risk" inputmode="decimal" step="50" value="200">
 </div>
 
-<div class="account-box">
-  <div class="section-title">Account & Leverage</div>
-  <div class="account-row save-btn-row">
-    <label>Cash Equity ($)</label>
-    <input type="number" id="cashEquity" inputmode="decimal" step="100" placeholder="0">
-    <button class="save-btn" id="cashSaveBtn" onclick="saveCashEquity()">Save</button>
-  </div>
-  <div class="account-info">
-    <div class="info-cell">
-      <div class="lbl">Time / Leverage</div>
-      <div class="val"><span id="leverageTag" class="leverage-tag full">6x</span></div>
-    </div>
-    <div class="info-cell">
-      <div class="lbl">Buying Power</div>
-      <div class="val" id="buyingPowerVal">—</div>
-    </div>
-  </div>
-</div>
-
 <div class="position-card">
   <div class="lbl">Position Size</div>
   <div class="val" id="positionShares">—</div>
@@ -618,6 +599,25 @@
   <div class="tw-row"><span class="lbl">Drawdown — slow down:</span><span class="val" id="twSlow">—</span></div>
   <div class="tw-row"><span class="lbl">Drawdown — STOP:</span><span class="val" id="twStop">—</span></div>
   <div class="tw-row"><span class="lbl">Full stops to stop:</span><span class="val">3</span></div>
+</div>
+
+<div class="account-box">
+  <div class="section-title">Account & Leverage</div>
+  <div class="account-row save-btn-row">
+    <label>Cash Equity ($)</label>
+    <input type="number" id="cashEquity" inputmode="decimal" step="100" placeholder="0">
+    <button class="save-btn" id="cashSaveBtn" onclick="saveCashEquity()">Save</button>
+  </div>
+  <div class="account-info">
+    <div class="info-cell">
+      <div class="lbl">Time / Leverage</div>
+      <div class="val"><span id="leverageTag" class="leverage-tag full">6x</span></div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Buying Power</div>
+      <div class="val" id="buyingPowerVal">—</div>
+    </div>
+  </div>
 </div>
 
 <div class="giveback-box giveback-disabled" id="givebackBox">
