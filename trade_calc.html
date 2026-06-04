@@ -517,37 +517,6 @@
   <div class="sub" id="positionDetail">enter values above</div>
 </div>
 
-<div class="giveback-box giveback-disabled" id="givebackBox">
-  <div class="giveback-toggle-row">
-    <div class="section-title" style="margin-bottom: 0">💰 Give-Back Budget</div>
-    <div class="toggle-switch" id="givebackToggle" onclick="toggleGiveback()"></div>
-  </div>
-  <div id="givebackContent" style="display:none">
-    <div class="account-row">
-      <label>Currently Up ($)</label>
-      <input type="number" id="dayProfit" inputmode="decimal" step="25" placeholder="0">
-    </div>
-    <div class="account-row">
-      <label>% willing to give back</label>
-      <input type="number" id="givebackPct" inputmode="decimal" step="5" placeholder="15" min="0" max="100">
-    </div>
-    <div class="giveback-floor">
-      <div class="gb-cell">
-        <div class="lbl">Floor (worst end of day)</div>
-        <div class="val green" id="gbFloor">—</div>
-      </div>
-      <div class="gb-cell">
-        <div class="lbl">Give-back $</div>
-        <div class="val warn" id="gbAmount">—</div>
-      </div>
-      <div class="gb-cell">
-        <div class="lbl">Max risk / trade</div>
-        <div class="val red" id="gbMaxRisk">—</div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="section">
   <div class="section-title">★ Critical Levels ★</div>
   <div class="levels-grid">
@@ -649,6 +618,37 @@
   <div class="tw-row"><span class="lbl">Drawdown — slow down:</span><span class="val" id="twSlow">—</span></div>
   <div class="tw-row"><span class="lbl">Drawdown — STOP:</span><span class="val" id="twStop">—</span></div>
   <div class="tw-row"><span class="lbl">Full stops to stop:</span><span class="val">3</span></div>
+</div>
+
+<div class="giveback-box giveback-disabled" id="givebackBox">
+  <div class="giveback-toggle-row">
+    <div class="section-title" style="margin-bottom: 0">💰 Give-Back Budget</div>
+    <div class="toggle-switch" id="givebackToggle" onclick="toggleGiveback()"></div>
+  </div>
+  <div id="givebackContent" style="display:none">
+    <div class="account-row">
+      <label>Currently Up ($)</label>
+      <input type="number" id="dayProfit" inputmode="decimal" step="25" placeholder="0">
+    </div>
+    <div class="account-row">
+      <label>% willing to give back</label>
+      <input type="number" id="givebackPct" inputmode="decimal" step="5" placeholder="15" min="0" max="100">
+    </div>
+    <div class="giveback-floor">
+      <div class="gb-cell">
+        <div class="lbl">Floor (worst end of day)</div>
+        <div class="val green" id="gbFloor">—</div>
+      </div>
+      <div class="gb-cell">
+        <div class="lbl">Give-back $</div>
+        <div class="val warn" id="gbAmount">—</div>
+      </div>
+      <div class="gb-cell">
+        <div class="lbl">Max risk / trade</div>
+        <div class="val red" id="gbMaxRisk">—</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <button class="reset-btn" onclick="resetAll()">Reset all inputs</button>
