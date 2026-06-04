@@ -224,6 +224,162 @@
     border-left: 3px solid #6b3eb8;
   }
   .reads .section-title { margin-bottom: 8px; padding-left: 0; color: #b8a3e6; }
+  /* Account / Leverage section */
+  .account-box {
+    background: #2a2724;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    border-left: 3px solid #0066b3;
+  }
+  .account-box .section-title { color: #6bb0e0; margin-bottom: 6px; padding-left: 0; }
+  .account-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .account-row label {
+    font-size: 11px;
+    color: #a8a29e;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  .account-row input {
+    width: 130px;
+    border: 1px solid #3d3a37;
+    background: #1c1917;
+    color: #f5f5f4;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: "SF Mono", Menlo, monospace;
+    outline: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    text-align: right;
+  }
+  .account-row.save-btn-row {
+    grid-template-columns: 1fr auto auto;
+    gap: 8px;
+  }
+  .save-btn {
+    background: #0066b3;
+    border: none;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .save-btn.saved { background: #0a8a4a; }
+  .account-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #3d3a37;
+  }
+  .account-info .info-cell {
+    text-align: center;
+    padding: 4px;
+  }
+  .account-info .info-cell .lbl {
+    font-size: 9px;
+    color: #888280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  .account-info .info-cell .val {
+    font-size: 15px;
+    font-weight: 700;
+    font-family: "SF Mono", Menlo, monospace;
+    color: #f5f5f4;
+    margin-top: 2px;
+  }
+  .leverage-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .leverage-tag.full   { background: #0a8a4a; color: #fff; }
+  .leverage-tag.cut    { background: #b07d00; color: #fff; }
+
+  /* Give-back budget section */
+  .giveback-box {
+    background: #2a2724;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    border-left: 3px solid #0a8a4a;
+  }
+  .giveback-box .section-title { color: #7ec99a; margin-bottom: 6px; padding-left: 0; }
+  .giveback-disabled .section-title { color: #888280; }
+  .giveback-disabled { border-left-color: #3d3a37; }
+  .giveback-toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: #3d3a37;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-switch.on { background: #0a8a4a; }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle-switch.on::after { transform: translateX(20px); }
+  .giveback-floor {
+    background: #1c1917;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .giveback-floor .gb-cell {
+    text-align: center;
+  }
+  .giveback-floor .gb-cell .lbl {
+    font-size: 9px;
+    color: #888280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  .giveback-floor .gb-cell .val {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: "SF Mono", Menlo, monospace;
+    margin-top: 2px;
+  }
+  .giveback-floor .gb-cell .val.green { color: #0a8a4a; }
+  .giveback-floor .gb-cell .val.red   { color: #d0172f; }
+  .giveback-floor .gb-cell .val.warn  { color: #b07d00; }
   .read-row {
     display: flex;
     justify-content: space-between;
@@ -336,10 +492,60 @@
   <input type="number" id="risk" inputmode="decimal" step="50" value="200">
 </div>
 
+<div class="account-box">
+  <div class="section-title">Account & Leverage</div>
+  <div class="account-row save-btn-row">
+    <label>Cash Equity ($)</label>
+    <input type="number" id="cashEquity" inputmode="decimal" step="100" placeholder="0">
+    <button class="save-btn" id="cashSaveBtn" onclick="saveCashEquity()">Save</button>
+  </div>
+  <div class="account-info">
+    <div class="info-cell">
+      <div class="lbl">Time / Leverage</div>
+      <div class="val"><span id="leverageTag" class="leverage-tag full">6x</span></div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Buying Power</div>
+      <div class="val" id="buyingPowerVal">—</div>
+    </div>
+  </div>
+</div>
+
 <div class="position-card">
   <div class="lbl">Position Size</div>
   <div class="val" id="positionShares">—</div>
   <div class="sub" id="positionDetail">enter values above</div>
+</div>
+
+<div class="giveback-box giveback-disabled" id="givebackBox">
+  <div class="giveback-toggle-row">
+    <div class="section-title" style="margin-bottom: 0">💰 Give-Back Budget</div>
+    <div class="toggle-switch" id="givebackToggle" onclick="toggleGiveback()"></div>
+  </div>
+  <div id="givebackContent" style="display:none">
+    <div class="account-row">
+      <label>Currently Up ($)</label>
+      <input type="number" id="dayProfit" inputmode="decimal" step="25" placeholder="0">
+    </div>
+    <div class="account-row">
+      <label>% willing to give back</label>
+      <input type="number" id="givebackPct" inputmode="decimal" step="5" placeholder="15" min="0" max="100">
+    </div>
+    <div class="giveback-floor">
+      <div class="gb-cell">
+        <div class="lbl">Floor (worst end of day)</div>
+        <div class="val green" id="gbFloor">—</div>
+      </div>
+      <div class="gb-cell">
+        <div class="lbl">Give-back $</div>
+        <div class="val warn" id="gbAmount">—</div>
+      </div>
+      <div class="gb-cell">
+        <div class="lbl">Max risk / trade</div>
+        <div class="val red" id="gbMaxRisk">—</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="section">
@@ -453,11 +659,46 @@
 
 <script>
 let side = 'LONG';
+let givebackEnabled = false;
 const reads = { readPrev: null, readAbove: null, readBody: null, readBig: null };
 
 function fmt(v) {
   if (v == null || !isFinite(v)) return '—';
   return '$' + v.toFixed(2);
+}
+
+function fmtDollar(v) {
+  if (v == null || !isFinite(v)) return '—';
+  const sign = v < 0 ? '-' : '';
+  return sign + '$' + Math.abs(v).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function getCurrentLeverage() {
+  // Between 9:30 AM and 3:30 PM ET → 6x. All other hours (incl pre-9:30 and post-3:30) → 3x.
+  const now = new Date();
+  // Convert to ET. Use Intl.DateTimeFormat for proper TZ handling.
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  });
+  const parts = fmt.formatToParts(now);
+  let hh = 0, mm = 0;
+  for (const p of parts) {
+    if (p.type === 'hour') hh = parseInt(p.value, 10);
+    if (p.type === 'minute') mm = parseInt(p.value, 10);
+  }
+  const totalMin = hh * 60 + mm;
+  const startMin = 9 * 60 + 30;   // 9:30 AM ET
+  const endMin = 15 * 60 + 30;    // 3:30 PM ET
+  return (totalMin >= startMin && totalMin < endMin) ? 6 : 3;
+}
+
+function getETTimeLabel() {
+  const now = new Date();
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  }).format(now) + ' ET';
 }
 
 function setSide(s) {
@@ -469,9 +710,7 @@ function setSide(s) {
 }
 
 function setRead(key, val) {
-  // Toggle off if same value clicked again
   reads[key] = reads[key] === val ? null : val;
-  // Update button states
   const group = document.getElementById(key);
   for (const btn of group.querySelectorAll('button')) {
     const isActive = btn.dataset.val === reads[key];
@@ -486,7 +725,6 @@ function setRead(key, val) {
 function updateConviction() {
   const el = document.getElementById('convictionSummary');
   el.classList.remove('high', 'low');
-  // High-conviction: prev bar red/doji + closed above + full body + biggest of 5
   const score = [
     reads.readPrev === 'red' || reads.readPrev === 'doji' ? 1 : 0,
     reads.readAbove === 'yes' ? 1 : 0,
@@ -509,22 +747,100 @@ function updateConviction() {
   }
 }
 
+function saveCashEquity() {
+  const btn = document.getElementById('cashSaveBtn');
+  btn.classList.add('saved');
+  btn.textContent = 'Saved ✓';
+  saveState();
+  recalc();
+  setTimeout(() => {
+    btn.classList.remove('saved');
+    btn.textContent = 'Save';
+  }, 1500);
+}
+
+function toggleGiveback() {
+  givebackEnabled = !givebackEnabled;
+  const toggle = document.getElementById('givebackToggle');
+  const content = document.getElementById('givebackContent');
+  const box = document.getElementById('givebackBox');
+  toggle.classList.toggle('on', givebackEnabled);
+  content.style.display = givebackEnabled ? 'block' : 'none';
+  box.classList.toggle('giveback-disabled', !givebackEnabled);
+  saveState();
+  recalc();
+}
+
 function recalc() {
   const entry = parseFloat(document.getElementById('entry').value);
   const stop  = parseFloat(document.getElementById('stop').value);
   const trigH = parseFloat(document.getElementById('trigHigh').value);
   const trigL = parseFloat(document.getElementById('trigLow').value);
   const risk  = parseFloat(document.getElementById('risk').value) || 200;
+  const cash  = parseFloat(document.getElementById('cashEquity').value) || 0;
 
   const isLong = side === 'LONG';
 
-  // Position
+  // ── Leverage and buying power ──
+  const leverage = getCurrentLeverage();
+  const buyingPower = cash * leverage;
+  const tag = document.getElementById('leverageTag');
+  tag.textContent = `${leverage}x · ${getETTimeLabel()}`;
+  tag.classList.toggle('full', leverage === 6);
+  tag.classList.toggle('cut',  leverage === 3);
+  document.getElementById('buyingPowerVal').textContent = buyingPower > 0 ? fmtDollar(buyingPower) : '—';
+
+  // ── Give-back budget ──
+  let effectiveRisk = risk;
+  let gbFloor = null, gbAmount = null, gbMaxRisk = null;
+  if (givebackEnabled) {
+    const dayProfit = parseFloat(document.getElementById('dayProfit').value) || 0;
+    const givebackPct = parseFloat(document.getElementById('givebackPct').value) || 0;
+    if (dayProfit > 0 && givebackPct >= 0) {
+      gbAmount = dayProfit * (givebackPct / 100);
+      gbFloor = dayProfit - gbAmount;
+      gbMaxRisk = gbAmount;  // worst-case -1R can't exceed give-back budget
+      effectiveRisk = Math.min(risk, gbMaxRisk);
+    }
+    document.getElementById('gbFloor').textContent  = gbFloor != null  ? fmtDollar(gbFloor) : '—';
+    document.getElementById('gbAmount').textContent = gbAmount != null ? fmtDollar(gbAmount) : '—';
+    document.getElementById('gbMaxRisk').textContent= gbMaxRisk != null ? fmtDollar(gbMaxRisk) : '—';
+  }
+
+  // ── Position size with all constraints ──
   if (entry && stop && Math.abs(entry - stop) > 0) {
     const r = Math.abs(entry - stop);
-    const shares = Math.floor(risk / r);
+
+    // Shares from risk dollars
+    let shares = Math.floor(effectiveRisk / r);
+
+    // Cap by buying power if cash equity is set
+    let bpCapped = false;
+    if (cash > 0 && buyingPower > 0) {
+      const bpMaxShares = Math.floor(buyingPower / entry);
+      if (shares > bpMaxShares) {
+        shares = bpMaxShares;
+        bpCapped = true;
+      }
+    }
+
+    const actualRiskDollars = shares * r;
+    const notional = shares * entry;
+
+    // Build detail line
+    let detailParts = [`R = $${r.toFixed(2)}`];
+    if (givebackEnabled && effectiveRisk < risk) {
+      detailParts.push(`risk capped to $${effectiveRisk.toFixed(0)} (give-back)`);
+    } else {
+      detailParts.push(`risk $${effectiveRisk.toFixed(0)}`);
+    }
+    if (bpCapped) {
+      detailParts.push(`⚠ BP-capped (${leverage}x)`);
+    }
+    detailParts.push(`≈ $${notional.toLocaleString(undefined, {maximumFractionDigits: 0})} notional`);
+
     document.getElementById('positionShares').textContent = shares.toLocaleString() + ' sh';
-    document.getElementById('positionDetail').textContent =
-      `R = $${r.toFixed(2)} · risk $${risk} · ≈ $${(shares * entry).toLocaleString(undefined, {maximumFractionDigits: 0})} notional`;
+    document.getElementById('positionDetail').textContent = detailParts.join(' · ');
 
     // Levels
     const sign = isLong ? 1 : -1;
@@ -534,14 +850,13 @@ function recalc() {
     document.getElementById('lvl3R').textContent  = fmt(entry + sign * 3 * r);
     document.getElementById('lvl4R').textContent  = fmt(entry + sign * 4 * r);
     document.getElementById('lvl10R').textContent = fmt(entry + sign * 10 * r);
-    // Ratchet levels — these are where stop MOVES TO at each touch threshold
-    document.getElementById('lvlRat1').textContent = fmt(entry);                  // 1R touch → BE
-    document.getElementById('lvlRat3').textContent = fmt(entry + sign * 2 * r);   // 3R touch → 2R
-    document.getElementById('lvlRat5').textContent = fmt(entry + sign * 3 * r);   // 5R touch → 3R
-    document.getElementById('lvlRat8').textContent = fmt(entry + sign * 5 * r);   // 8R touch → 5R
+    document.getElementById('lvlRat1').textContent = fmt(entry);
+    document.getElementById('lvlRat3').textContent = fmt(entry + sign * 2 * r);
+    document.getElementById('lvlRat5').textContent = fmt(entry + sign * 3 * r);
+    document.getElementById('lvlRat8').textContent = fmt(entry + sign * 5 * r);
 
-    // Tripwires (scale to risk size — assumes the validated $200-risk numbers scale linearly)
-    const scale = risk / 200;
+    // Tripwires scaled to effective risk
+    const scale = effectiveRisk / 200;
     document.getElementById('twSlow').textContent = '-$' + (660 * scale).toFixed(0);
     document.getElementById('twStop').textContent = '-$' + (900 * scale).toFixed(0);
   } else {
@@ -554,11 +869,9 @@ function recalc() {
     document.getElementById('twStop').textContent = '—';
   }
 
-  // 50% retrace level — requires trigger high AND low
+  // 50% retrace
   if (trigH && trigL && trigH > trigL) {
     const range = trigH - trigL;
-    // For longs: 50% level = trigger high - half range
-    // For shorts: 50% level = trigger low + half range
     const lvl50 = isLong ? trigH - range / 2 : trigL + range / 2;
     document.getElementById('lvl50').textContent = fmt(lvl50);
   } else {
@@ -570,6 +883,7 @@ function recalc() {
 
 function resetAll() {
   for (const id of ['entry','stop','trigHigh','trigLow']) document.getElementById(id).value = '';
+  // Don't reset cash equity or risk (those are persistent)
   for (const k of Object.keys(reads)) {
     reads[k] = null;
     for (const btn of document.getElementById(k).querySelectorAll('button')) btn.classList.remove('active','yes','no');
@@ -580,12 +894,15 @@ function resetAll() {
 
 function saveState() {
   const state = {
-    side, reads,
+    side, reads, givebackEnabled,
     entry: document.getElementById('entry').value,
     stop:  document.getElementById('stop').value,
     trigHigh: document.getElementById('trigHigh').value,
     trigLow:  document.getElementById('trigLow').value,
     risk: document.getElementById('risk').value,
+    cashEquity: document.getElementById('cashEquity').value,
+    dayProfit: document.getElementById('dayProfit').value,
+    givebackPct: document.getElementById('givebackPct').value,
   };
   try { localStorage.setItem('tradecalc_state', JSON.stringify(state)); } catch (e) {}
 }
@@ -601,6 +918,15 @@ function loadState() {
     if (state.trigHigh) document.getElementById('trigHigh').value = state.trigHigh;
     if (state.trigLow)  document.getElementById('trigLow').value = state.trigLow;
     if (state.risk)     document.getElementById('risk').value = state.risk;
+    if (state.cashEquity) document.getElementById('cashEquity').value = state.cashEquity;
+    if (state.dayProfit) document.getElementById('dayProfit').value = state.dayProfit;
+    if (state.givebackPct) document.getElementById('givebackPct').value = state.givebackPct;
+    if (state.givebackEnabled) {
+      givebackEnabled = true;
+      document.getElementById('givebackToggle').classList.add('on');
+      document.getElementById('givebackContent').style.display = 'block';
+      document.getElementById('givebackBox').classList.remove('giveback-disabled');
+    }
     if (state.reads) {
       for (const k of Object.keys(state.reads)) {
         if (state.reads[k]) setRead(k, state.reads[k]);
@@ -610,9 +936,12 @@ function loadState() {
 }
 
 // Wire input changes
-for (const id of ['entry','stop','trigHigh','trigLow','risk']) {
+for (const id of ['entry','stop','trigHigh','trigLow','risk','cashEquity','dayProfit','givebackPct']) {
   document.getElementById(id).addEventListener('input', recalc);
 }
+
+// Refresh leverage display every minute so the leverage tag updates at 3:30
+setInterval(recalc, 60 * 1000);
 
 loadState();
 recalc();
