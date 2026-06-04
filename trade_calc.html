@@ -238,6 +238,145 @@
   .retrace-hero.empty::before { display: none; }
   .retrace-hero.empty .hero-lbl { color: #888280; }
   .retrace-hero.empty .hero-val { color: #555; text-shadow: none; }
+
+  /* Symbol history lookup — hero treatment, easy to read at a glance */
+  .symbol-hero {
+    background: linear-gradient(135deg, #1a2a4a 0%, #0066b3 100%);
+    border: 2px solid #4a9be8;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 0 0 1px rgba(74, 155, 232, 0.2), 0 4px 12px rgba(0, 102, 179, 0.3);
+  }
+  .symbol-hero-title {
+    font-size: 11px;
+    color: #c8e0f5;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 800;
+    margin-bottom: 10px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .symbol-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .symbol-input-row input[type="text"] {
+    flex: 1;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 800;
+    font-family: "SF Mono", Menlo, monospace;
+    outline: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .symbol-input-row input[type="text"]::placeholder {
+    color: rgba(255,255,255,0.5);
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .symbol-input-row button {
+    background: #fff;
+    border: none;
+    color: #0066b3;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    min-width: 80px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .symbol-input-row button:active { background: #e8e8e8; }
+  .symbol-input-row button:disabled { background: rgba(255,255,255,0.4); color: rgba(0,102,179,0.5); cursor: wait; }
+  .symbol-stats {
+    margin-top: 12px;
+    display: none;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .symbol-stats.show { display: grid; }
+  .stat-pill {
+    background: rgba(0,0,0,0.35);
+    border-radius: 8px;
+    padding: 9px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .stat-pill .lbl {
+    font-size: 9px;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+  .stat-pill .val {
+    font-size: 18px;
+    font-weight: 800;
+    font-family: "SF Mono", Menlo, monospace;
+    color: #fff;
+    line-height: 1.1;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .stat-pill.full {
+    grid-column: span 3;
+    background: rgba(10, 138, 74, 0.25);
+    border-color: rgba(126, 201, 154, 0.4);
+  }
+  .stat-pill.full .val {
+    font-size: 22px;
+    color: #a3eec3;
+  }
+  .symbol-error {
+    margin-top: 10px;
+    padding: 9px 11px;
+    background: rgba(208, 23, 47, 0.25);
+    border: 1px solid rgba(208, 23, 47, 0.6);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #ffb8b8;
+    font-weight: 600;
+    display: none;
+  }
+  .symbol-error.show { display: block; }
+  .symbol-url-config {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+  .symbol-url-config summary {
+    font-size: 10px;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 0;
+  }
+  .symbol-url-config input {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 10px;
+    font-family: "SF Mono", Menlo, monospace;
+    outline: none;
+    padding: 7px 9px;
+    border-radius: 4px;
+    margin-top: 6px;
+  }
   .position-card {
     background: linear-gradient(135deg, #1a3a5a 0%, #0066b3 100%);
     border: none;
@@ -585,6 +724,20 @@
   </div>
 </div>
 
+<div class="symbol-hero" id="symbolHero">
+  <div class="symbol-hero-title">📊 Symbol History</div>
+  <div class="symbol-input-row">
+    <input type="text" id="symbolInput" placeholder="Enter symbol (e.g. UVIX)" autocapitalize="characters" autocorrect="off" autocomplete="off">
+    <button id="symbolLookupBtn" onclick="lookupSymbol()">Look Up</button>
+  </div>
+  <div class="symbol-stats" id="symbolStats"></div>
+  <div class="symbol-error" id="symbolError"></div>
+  <details class="symbol-url-config">
+    <summary>⚙ Apps Script URL (set once)</summary>
+    <input type="url" id="symbolApiUrl" placeholder="https://script.google.com/macros/s/.../exec">
+  </details>
+</div>
+
 <div class="section">
   <div class="section-title">Targets</div>
   <div class="levels-grid">
@@ -830,6 +983,100 @@ function saveCashEquity() {
   }, 1500);
 }
 
+// ─── Symbol history lookup (Apps Script via JSONP) ───
+// JSONP is required because Apps Script web apps use a redirect chain that
+// browsers block during cross-origin fetch(). Loading as a <script> tag bypasses CORS.
+let _jsonpCallbackId = 0;
+
+function lookupSymbol() {
+  const symbol = document.getElementById('symbolInput').value.trim().toUpperCase();
+  const url = document.getElementById('symbolApiUrl').value.trim();
+  const btn = document.getElementById('symbolLookupBtn');
+  const statsEl = document.getElementById('symbolStats');
+  const errEl = document.getElementById('symbolError');
+
+  errEl.classList.remove('show');
+  statsEl.classList.remove('show');
+
+  if (!url) {
+    errEl.textContent = 'Set your Apps Script URL first (gear icon below)';
+    errEl.classList.add('show');
+    return;
+  }
+  if (!symbol) {
+    errEl.textContent = 'Enter a symbol';
+    errEl.classList.add('show');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  // Create a unique callback function name
+  const cbName = '_tcCb' + (++_jsonpCallbackId);
+  const scriptEl = document.createElement('script');
+  let done = false;
+
+  const cleanup = () => {
+    if (done) return;
+    done = true;
+    btn.disabled = false;
+    btn.textContent = 'Look Up';
+    delete window[cbName];
+    if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+  };
+
+  // Set up the callback that Apps Script will call
+  window[cbName] = (data) => {
+    cleanup();
+    try {
+      if (!data || !data.ok) throw new Error((data && data.error) || 'Unknown error');
+      const stats = [
+        { lbl: 'Last Date',     val: data.lastDate     || '—' },
+        { lbl: 'Win Rate',      val: data.winRate      || '—' },
+        { lbl: 'Times Traded',  val: data.timesTraded  || '—' },
+        { lbl: 'Avg R / Trade', val: data.avgRPerTrade || '—' },
+        { lbl: 'Lifetime P&L',  val: data.lifetimePL   || '—', full: true },
+      ];
+      statsEl.innerHTML = stats.map(s =>
+        `<div class="stat-pill${s.full ? ' full' : ''}"><div class="lbl">${s.lbl}</div><div class="val">${s.val}</div></div>`
+      ).join('');
+      statsEl.classList.add('show');
+    } catch (err) {
+      errEl.textContent = 'Lookup failed: ' + (err.message || err);
+      errEl.classList.add('show');
+    }
+  };
+
+  // Build the URL with both symbol and callback parameters
+  const sep = url.includes('?') ? '&' : '?';
+  const fullUrl = url + sep + 'symbol=' + encodeURIComponent(symbol) + '&callback=' + cbName;
+
+  // Timeout guard — if Apps Script never responds, clean up after 15 seconds
+  const timer = setTimeout(() => {
+    if (!done) {
+      cleanup();
+      errEl.textContent = 'Lookup timed out (15s). Apps Script may be slow — try again.';
+      errEl.classList.add('show');
+    }
+  }, 15000);
+
+  scriptEl.onerror = () => {
+    clearTimeout(timer);
+    cleanup();
+    errEl.textContent = 'Lookup failed: network error or wrong URL';
+    errEl.classList.add('show');
+  };
+
+  // Wrap callback to clear timeout when it fires
+  const originalCb = window[cbName];
+  window[cbName] = (data) => { clearTimeout(timer); originalCb(data); };
+
+  scriptEl.src = fullUrl;
+  document.head.appendChild(scriptEl);
+  saveState();
+}
+
 function toggleGiveback() {
   givebackEnabled = !givebackEnabled;
   const toggle = document.getElementById('givebackToggle');
@@ -977,6 +1224,8 @@ function saveState() {
     cashEquity: document.getElementById('cashEquity').value,
     dayProfit: document.getElementById('dayProfit').value,
     givebackPct: document.getElementById('givebackPct').value,
+    symbolApiUrl: document.getElementById('symbolApiUrl').value,
+    symbolInput: document.getElementById('symbolInput').value,
   };
   try { localStorage.setItem('tradecalc_state', JSON.stringify(state)); } catch (e) {}
 }
@@ -995,6 +1244,8 @@ function loadState() {
     if (state.cashEquity) document.getElementById('cashEquity').value = state.cashEquity;
     if (state.dayProfit) document.getElementById('dayProfit').value = state.dayProfit;
     if (state.givebackPct) document.getElementById('givebackPct').value = state.givebackPct;
+    if (state.symbolApiUrl) document.getElementById('symbolApiUrl').value = state.symbolApiUrl;
+    if (state.symbolInput)  document.getElementById('symbolInput').value = state.symbolInput;
     if (state.givebackEnabled) {
       givebackEnabled = true;
       document.getElementById('givebackToggle').classList.add('on');
@@ -1013,6 +1264,13 @@ function loadState() {
 for (const id of ['entry','stop','trigHigh','trigLow','risk','cashEquity','dayProfit','givebackPct']) {
   document.getElementById(id).addEventListener('input', recalc);
 }
+
+// Symbol field — Enter triggers lookup; URL field auto-saves
+document.getElementById('symbolInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); lookupSymbol(); }
+});
+document.getElementById('symbolApiUrl').addEventListener('input', saveState);
+document.getElementById('symbolInput').addEventListener('input', saveState);
 
 // Refresh leverage display every minute so the leverage tag updates at 3:30
 setInterval(recalc, 60 * 1000);
