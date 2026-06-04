@@ -724,20 +724,6 @@
   </div>
 </div>
 
-<div class="symbol-hero" id="symbolHero">
-  <div class="symbol-hero-title">📊 Symbol History</div>
-  <div class="symbol-input-row">
-    <input type="text" id="symbolInput" placeholder="Enter symbol (e.g. UVIX)" autocapitalize="characters" autocorrect="off" autocomplete="off">
-    <button id="symbolLookupBtn" onclick="lookupSymbol()">Look Up</button>
-  </div>
-  <div class="symbol-stats" id="symbolStats"></div>
-  <div class="symbol-error" id="symbolError"></div>
-  <details class="symbol-url-config">
-    <summary>⚙ Apps Script URL (set once)</summary>
-    <input type="url" id="symbolApiUrl" placeholder="https://script.google.com/macros/s/.../exec">
-  </details>
-</div>
-
 <div class="section">
   <div class="section-title">Targets</div>
   <div class="levels-grid">
@@ -758,6 +744,20 @@
       <div class="val green" id="lvl4R">—</div>
     </div>
   </div>
+</div>
+
+<div class="symbol-hero" id="symbolHero">
+  <div class="symbol-hero-title">📊 Symbol History</div>
+  <div class="symbol-input-row">
+    <input type="text" id="symbolInput" placeholder="Enter symbol (e.g. UVIX)" autocapitalize="characters" autocorrect="off" autocomplete="off">
+    <button id="symbolLookupBtn" onclick="lookupSymbol()">Look Up</button>
+  </div>
+  <div class="symbol-stats" id="symbolStats"></div>
+  <div class="symbol-error" id="symbolError"></div>
+  <details class="symbol-url-config">
+    <summary>⚙ Apps Script URL (set once)</summary>
+    <input type="url" id="symbolApiUrl" placeholder="https://script.google.com/macros/s/.../exec">
+  </details>
 </div>
 
 <div class="section">
@@ -983,12 +983,10 @@ function saveCashEquity() {
   }, 1500);
 }
 
-// ─── Symbol history lookup (Apps Script via JSONP) ───
-// JSONP is required because Apps Script web apps use a redirect chain that
-// browsers block during cross-origin fetch(). Loading as a <script> tag bypasses CORS.
-let _jsonpCallbackId = 0;
-
-function lookupSymbol() {
+// ─── Symbol history lookup (Apps Script via POST text/plain) ───
+// Apps Script web apps support POST with Content-Type:text/plain as a "simple request"
+// per CORS rules — bypasses the preflight blocker that breaks regular fetch().
+async function lookupSymbol() {
   const symbol = document.getElementById('symbolInput').value.trim().toUpperCase();
   const url = document.getElementById('symbolApiUrl').value.trim();
   const btn = document.getElementById('symbolLookupBtn');
@@ -1012,68 +1010,38 @@ function lookupSymbol() {
   btn.disabled = true;
   btn.textContent = '...';
 
-  // Create a unique callback function name
-  const cbName = '_tcCb' + (++_jsonpCallbackId);
-  const scriptEl = document.createElement('script');
-  let done = false;
+  try {
+    // POST with text/plain — counts as a "simple request" per CORS, no preflight needed.
+    // Apps Script's doPost handler reads the payload from e.postData.contents.
+    const resp = await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ symbol: symbol }),
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Unknown error');
 
-  const cleanup = () => {
-    if (done) return;
-    done = true;
+    const stats = [
+      { lbl: 'Last Date',     val: data.lastDate     || '—' },
+      { lbl: 'Win Rate',      val: data.winRate      || '—' },
+      { lbl: 'Times Traded',  val: data.timesTraded  || '—' },
+      { lbl: 'Avg R / Trade', val: data.avgRPerTrade || '—' },
+      { lbl: 'Lifetime P&L',  val: data.lifetimePL   || '—', full: true },
+    ];
+    statsEl.innerHTML = stats.map(s =>
+      `<div class="stat-pill${s.full ? ' full' : ''}"><div class="lbl">${s.lbl}</div><div class="val">${s.val}</div></div>`
+    ).join('');
+    statsEl.classList.add('show');
+  } catch (err) {
+    errEl.textContent = 'Lookup failed: ' + (err.message || err);
+    errEl.classList.add('show');
+  } finally {
     btn.disabled = false;
     btn.textContent = 'Look Up';
-    delete window[cbName];
-    if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
-  };
-
-  // Set up the callback that Apps Script will call
-  window[cbName] = (data) => {
-    cleanup();
-    try {
-      if (!data || !data.ok) throw new Error((data && data.error) || 'Unknown error');
-      const stats = [
-        { lbl: 'Last Date',     val: data.lastDate     || '—' },
-        { lbl: 'Win Rate',      val: data.winRate      || '—' },
-        { lbl: 'Times Traded',  val: data.timesTraded  || '—' },
-        { lbl: 'Avg R / Trade', val: data.avgRPerTrade || '—' },
-        { lbl: 'Lifetime P&L',  val: data.lifetimePL   || '—', full: true },
-      ];
-      statsEl.innerHTML = stats.map(s =>
-        `<div class="stat-pill${s.full ? ' full' : ''}"><div class="lbl">${s.lbl}</div><div class="val">${s.val}</div></div>`
-      ).join('');
-      statsEl.classList.add('show');
-    } catch (err) {
-      errEl.textContent = 'Lookup failed: ' + (err.message || err);
-      errEl.classList.add('show');
-    }
-  };
-
-  // Build the URL with both symbol and callback parameters
-  const sep = url.includes('?') ? '&' : '?';
-  const fullUrl = url + sep + 'symbol=' + encodeURIComponent(symbol) + '&callback=' + cbName;
-
-  // Timeout guard — if Apps Script never responds, clean up after 15 seconds
-  const timer = setTimeout(() => {
-    if (!done) {
-      cleanup();
-      errEl.textContent = 'Lookup timed out (15s). Apps Script may be slow — try again.';
-      errEl.classList.add('show');
-    }
-  }, 15000);
-
-  scriptEl.onerror = () => {
-    clearTimeout(timer);
-    cleanup();
-    errEl.textContent = 'Lookup failed: network error or wrong URL';
-    errEl.classList.add('show');
-  };
-
-  // Wrap callback to clear timeout when it fires
-  const originalCb = window[cbName];
-  window[cbName] = (data) => { clearTimeout(timer); originalCb(data); };
-
-  scriptEl.src = fullUrl;
-  document.head.appendChild(scriptEl);
+  }
   saveState();
 }
 
