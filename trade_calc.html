@@ -303,42 +303,74 @@
     margin-top: 12px;
     display: none;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px;
+    gap: 7px;
   }
   .symbol-stats.show { display: grid; }
   .stat-pill {
-    background: rgba(0,0,0,0.35);
-    border-radius: 8px;
-    padding: 9px 10px;
+    background: rgba(0,0,0,0.45);
+    border-radius: 10px;
+    padding: 10px 10px 8px;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
     border: 1px solid rgba(255,255,255,0.1);
+    transition: border-color 0.2s, background 0.2s;
   }
   .stat-pill .lbl {
     font-size: 9px;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255,255,255,0.55);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     font-weight: 700;
   }
   .stat-pill .val {
-    font-size: 18px;
-    font-weight: 800;
+    font-size: 20px;
+    font-weight: 900;
     font-family: "SF Mono", Menlo, monospace;
     color: #fff;
     line-height: 1.1;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
-  .stat-pill.full {
-    grid-column: span 3;
-    background: rgba(10, 138, 74, 0.25);
-    border-color: rgba(126, 201, 154, 0.4);
+  .stat-pill .badge {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+    border-radius: 3px;
+    padding: 1px 5px;
+    display: inline-block;
+    width: fit-content;
   }
-  .stat-pill.full .val {
-    font-size: 22px;
-    color: #a3eec3;
+  /* HOT — win rate ≥60%, high trade count, positive P&L */
+  .stat-pill.hot {
+    background: rgba(10, 138, 74, 0.3);
+    border: 2px solid #0a8a4a;
+    box-shadow: 0 0 10px rgba(10,138,74,0.35);
   }
+  .stat-pill.hot .val { color: #3df5a0; text-shadow: 0 0 8px rgba(61,245,160,0.5); }
+  .stat-pill.hot .lbl { color: rgba(180,255,220,0.8); }
+  .stat-pill.hot .badge { background: #0a8a4a; color: #b8ffd8; }
+  /* WARN — moderate (40-59%) win rate, moderate trade count */
+  .stat-pill.warn {
+    background: rgba(176, 125, 0, 0.25);
+    border: 2px solid #b07d00;
+    box-shadow: 0 0 8px rgba(176,125,0,0.3);
+  }
+  .stat-pill.warn .val { color: #ffd057; }
+  .stat-pill.warn .lbl { color: rgba(255,220,120,0.75); }
+  .stat-pill.warn .badge { background: #b07d00; color: #fff3c0; }
+  /* COLD — low win rate / negative P&L */
+  .stat-pill.cold {
+    background: rgba(208, 23, 47, 0.2);
+    border: 2px solid #d0172f;
+    box-shadow: 0 0 8px rgba(208,23,47,0.25);
+  }
+  .stat-pill.cold .val { color: #ff7f8a; }
+  .stat-pill.cold .lbl { color: rgba(255,160,170,0.75); }
+  .stat-pill.cold .badge { background: #d0172f; color: #ffd0d4; }
+  /* Full-width P&L pill */
+  .stat-pill.full { grid-column: span 3; }
+  .stat-pill.full .val { font-size: 26px; }
   .symbol-error {
     margin-top: 10px;
     padding: 9px 11px;
@@ -716,12 +748,6 @@
     <div class="hero-val" id="lvl50">—</div>
     <div class="hero-sub">Most urgent in-trade decision — exit on bar 1-4 low below this</div>
   </div>
-  <div class="levels-grid">
-    <div class="level-card danger full" id="cardStop">
-      <div class="lbl">Stop (-1R)</div>
-      <div class="val red" id="lvlStop">—</div>
-    </div>
-  </div>
 </div>
 
 <div class="section">
@@ -1024,16 +1050,73 @@ async function lookupSymbol() {
     const data = await resp.json();
     if (!data.ok) throw new Error(data.error || 'Unknown error');
 
+    // ── classify each stat for color coding ──
+    function pillClass(key, raw) {
+      if (!raw || raw === '—') return '';
+      if (key === 'winRate') {
+        const pct = parseFloat(raw);
+        if (isNaN(pct)) return '';
+        if (pct >= 60) return 'hot';
+        if (pct >= 40) return 'warn';
+        return 'cold';
+      }
+      if (key === 'timesTraded') {
+        const n = parseInt(raw);
+        if (isNaN(n)) return '';
+        if (n >= 15) return 'hot';
+        if (n >= 6)  return 'warn';
+        return 'cold';
+      }
+      if (key === 'lifetimePL' || key === 'avgRPerTrade') {
+        const n = parseFloat(raw.replace(/[^0-9.\-]/g, ''));
+        if (isNaN(n)) return '';
+        if (n > 0)  return 'hot';
+        if (n === 0) return 'warn';
+        return 'cold';
+      }
+      return '';
+    }
+    function pillBadge(key, raw, cls) {
+      if (!cls || !raw || raw === '—') return '';
+      if (key === 'winRate') {
+        if (cls === 'hot')  return '<div class="badge">🔥 Strong Edge</div>';
+        if (cls === 'warn') return '<div class="badge">⚠ Moderate</div>';
+        return '<div class="badge">⚡ Low Win%</div>';
+      }
+      if (key === 'timesTraded') {
+        if (cls === 'hot')  return '<div class="badge">✓ High Sample</div>';
+        if (cls === 'warn') return '<div class="badge">~ Building</div>';
+        return '<div class="badge">! Few Trades</div>';
+      }
+      if (key === 'lifetimePL') {
+        if (cls === 'hot')  return '<div class="badge">✓ Profitable</div>';
+        if (cls === 'cold') return '<div class="badge">✗ Net Loser</div>';
+        return '';
+      }
+      if (key === 'avgRPerTrade') {
+        if (cls === 'hot')  return '<div class="badge">↑ Positive R</div>';
+        if (cls === 'cold') return '<div class="badge">↓ Negative R</div>';
+        return '';
+      }
+      return '';
+    }
+
     const stats = [
-      { lbl: 'Last Date',     val: data.lastDate     || '—' },
-      { lbl: 'Win Rate',      val: data.winRate      || '—' },
-      { lbl: 'Times Traded',  val: data.timesTraded  || '—' },
-      { lbl: 'Avg R / Trade', val: data.avgRPerTrade || '—' },
-      { lbl: 'Lifetime P&L',  val: data.lifetimePL   || '—', full: true },
+      { key: 'lastDate',     lbl: 'Last Trade',    val: data.lastDate     || '—' },
+      { key: 'winRate',      lbl: 'Win Rate',       val: data.winRate      || '—' },
+      { key: 'timesTraded',  lbl: 'Times Traded',   val: data.timesTraded  || '—' },
+      { key: 'avgRPerTrade', lbl: 'Avg R / Trade',  val: data.avgRPerTrade || '—' },
+      { key: 'lifetimePL',   lbl: 'Lifetime P&L',   val: data.lifetimePL   || '—', full: true },
     ];
-    statsEl.innerHTML = stats.map(s =>
-      `<div class="stat-pill${s.full ? ' full' : ''}"><div class="lbl">${s.lbl}</div><div class="val">${s.val}</div></div>`
-    ).join('');
+    statsEl.innerHTML = stats.map(s => {
+      const cls = pillClass(s.key, s.val);
+      const badge = pillBadge(s.key, s.val, cls);
+      return `<div class="stat-pill${s.full ? ' full' : ''}${cls ? ' ' + cls : ''}">
+        <div class="lbl">${s.lbl}</div>
+        <div class="val">${s.val}</div>
+        ${badge}
+      </div>`;
+    }).join('');
     statsEl.classList.add('show');
   } catch (err) {
     errEl.textContent = 'Lookup failed: ' + (err.message || err);
@@ -1130,7 +1213,6 @@ function recalc() {
 
     // Levels
     const sign = isLong ? 1 : -1;
-    document.getElementById('lvlStop').textContent = fmt(stop);
     document.getElementById('lvl1R').textContent  = fmt(entry + sign * 1 * r);
     document.getElementById('lvl2R').textContent  = fmt(entry + sign * 2 * r);
     document.getElementById('lvl3R').textContent  = fmt(entry + sign * 3 * r);
@@ -1148,7 +1230,7 @@ function recalc() {
   } else {
     document.getElementById('positionShares').textContent = '—';
     document.getElementById('positionDetail').textContent = 'enter values above';
-    for (const id of ['lvlStop','lvl1R','lvl2R','lvl3R','lvl4R','lvl10R','lvlRat1','lvlRat3','lvlRat5','lvlRat8']) {
+    for (const id of ['lvl1R','lvl2R','lvl3R','lvl4R','lvl10R','lvlRat1','lvlRat3','lvlRat5','lvlRat8']) {
       document.getElementById(id).textContent = '—';
     }
     document.getElementById('twSlow').textContent = '—';
