@@ -368,9 +368,7 @@
   .stat-pill.cold .val { color: #ff7f8a; }
   .stat-pill.cold .lbl { color: rgba(255,160,170,0.75); }
   .stat-pill.cold .badge { background: #d0172f; color: #ffd0d4; }
-  /* Full-width P&L pill */
-  .stat-pill.full { grid-column: span 3; }
-  .stat-pill.full .val { font-size: 26px; }
+  /* No full-width override — P&L sits inline with Avg R */
   .symbol-error {
     margin-top: 10px;
     padding: 9px 11px;
@@ -1106,7 +1104,7 @@ async function lookupSymbol() {
       { key: 'winRate',      lbl: 'Win Rate',       val: data.winRate      || '—' },
       { key: 'timesTraded',  lbl: 'Times Traded',   val: data.timesTraded  || '—' },
       { key: 'avgRPerTrade', lbl: 'Avg R / Trade',  val: data.avgRPerTrade || '—' },
-      { key: 'lifetimePL',   lbl: 'Lifetime P&L',   val: data.lifetimePL   || '—', full: true },
+      { key: 'lifetimePL',   lbl: 'Lifetime P&L',   val: data.lifetimePL   || '—' },
     ];
     statsEl.innerHTML = stats.map(s => {
       const cls = pillClass(s.key, s.val);
