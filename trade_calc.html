@@ -499,6 +499,22 @@
     font-family: inherit;
   }
   .reset-btn:active { background: #3d3a37; }
+  /* Compact reset for top placement — sits between position card and inputs */
+  .reset-btn-compact {
+    width: 100%;
+    background: transparent;
+    border: 1px solid #3d3a37;
+    color: #888280;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-family: inherit;
+    letter-spacing: 0.05em;
+  }
+  .reset-btn-compact:active { background: #2a2724; color: #f5f5f4; }
   .footer-note {
     text-align: center;
     font-size: 10px;
@@ -532,6 +548,8 @@
   <div class="val" id="positionShares">—</div>
   <div class="sub" id="positionDetail">enter values above</div>
 </div>
+
+<button class="reset-btn-compact" onclick="resetAll()">⟲ Clear trade inputs (new setup)</button>
 
 <div class="input-group">
   <div class="input-cell">
@@ -705,8 +723,6 @@
     </div>
   </div>
 </div>
-
-<button class="reset-btn" onclick="resetAll()">Reset all inputs</button>
 
 <div class="footer-note">
   Saves automatically · works offline once loaded
